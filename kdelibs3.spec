@@ -26,10 +26,10 @@
 %define include_crystalsvg 1
 
 Summary: K Desktop Environment 3 - Libraries
-Version: 3.5.10
-Release: 23%{?dist}
-
 Name: kdelibs3
+Version: 3.5.10
+Release: 24%{?dist}.1
+
 Obsoletes: kdelibs < 6:%{version}-%{release}
 Provides: kdelibs = 6:%{version}-%{release}
 
@@ -103,6 +103,8 @@ Patch205: kdelibs-3.5.10-CVE-2009-2702.patch
 Patch206: kdelibs-3.5.10-oCERT-2009-015-xmlhttprequest.patch
 # CVE-2009-3736, libltdl may load and execute code from a library in the current directory
 Patch207: libltdl-CVE-2009-3736.patch
+# CVE-2011-3365, input validation failure in KSSL
+Patch208: kdelibs-3.5.x-CVE-2011-3365.patch
 
 Requires: hicolor-icon-theme
 %if %{kde_settings}
@@ -113,7 +115,7 @@ Requires: kdelibs-common
 Requires: redhat-menus
 Requires: shadow-utils
 BuildRequires: sudo
-Requires(hint): sudo
+Requires: sudo
 
 %if 0%{?fedora}
 %define libkdnssd libkdnssd
@@ -262,6 +264,7 @@ format for easy browsing
 %patch205 -p1 -b .cve-2009-2702
 %patch206 -p0 -b .oCERT-2009-015-xmlhttprequest
 %patch207 -p1 -b .CVE-2009-3736
+%patch208 -p1 -b .CVE-2011-3365
 
 sed -i -e "s,^#define KDE_VERSION_STRING .*,#define KDE_VERSION_STRING \"%{version}-%{release} %{distname}\"," kdecore/kdeversion.h
 
@@ -588,6 +591,9 @@ touch --no-create %{_datadir}/icons/crystalsvg 2> /dev/null || :
 
 
 %changelog
+* Fri Oct 14 2011 Than Ngo <than@redhat.com> - 3.5.10-24.1
+- Resolves: bz#746160, CVE-2011-3365, input validation failure in KSSL
+
 * Mon Jul 19 2010 Than Ngo <than@redhat.com> - 3.5.10-23
 - Resolves: bz#605067, fix checking inotify with new gcc
 
