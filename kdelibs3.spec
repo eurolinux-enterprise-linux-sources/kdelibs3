@@ -28,11 +28,7 @@
 Summary: K Desktop Environment 3 - Libraries
 Name: kdelibs3
 Version: 3.5.10
-Release: 24%{?dist}.1
-
-Obsoletes: kdelibs < 6:%{version}-%{release}
-Provides: kdelibs = 6:%{version}-%{release}
-
+Release: 25%{?dist}
 License: LGPLv2
 Url: http://www.kde.org/
 Group: System Environment/Libraries
@@ -106,6 +102,7 @@ Patch207: libltdl-CVE-2009-3736.patch
 # CVE-2011-3365, input validation failure in KSSL
 Patch208: kdelibs-3.5.x-CVE-2011-3365.patch
 
+Requires: ca-certificates
 Requires: hicolor-icon-theme
 %if %{kde_settings}
 Requires: kde-settings >= 3.5
@@ -191,8 +188,6 @@ kimgio (image manipulation).
 %package devel
 Group: Development/Libraries
 Summary: Header files and documentation for compiling KDE 3 applications.
-Obsoletes: kdelibs-devel < 6:%{version}-%{release}
-Provides:  kdelibs-devel = 6:%{version}-%{release}
 Requires: %{name}%{?_isa} = %{?epoch:%{epoch}:}%{version}-%{release}
 Requires: %{qt3}-devel
 Requires: openssl-devel
@@ -205,9 +200,7 @@ applications for KDE 3.
 %package apidocs
 Group: Development/Documentation
 Summary: KDE 3 API documentation.
-Requires: %{name} = %{?epoch:%{epoch}:}%{version}
-Obsoletes: kdelibs-apidocs < 6:%{version}-%{release}
-Provides:  kdelibs-apidocs = 6:%{version}-%{release}
+Requires: kde-filesystem
 BuildArch: noarch
 
 %description apidocs
@@ -451,10 +444,17 @@ rm -f %{buildroot}%{_bindir}/preparetips
 sed -i -e "s,^OnlyShowIn=KDE;,OnlyShowIn=KDE3;," %{buildroot}%{_datadir}/applications/kde/kresources.desktop 
 
 %if 0%{?include_crystalsvg} == 0
-# remove all crystalsvg icons for now
-rm -rf %{buildroot}%{_datadir}/icons/crystalsvg/
+  # remove all crystalsvg icons for now
+  rm -rf %{buildroot}%{_datadir}/icons/crystalsvg/
 %endif
 
+## use ca-certificates' ca-bundle.crt, symlink as what most other
+## distros do these days (http://bugzilla.redhat.com/521902)
+if [  -f %{buildroot}%{_datadir}/apps/kssl/ca-bundle.crt -a \
+      -f /etc/pki/tls/certs/ca-bundle.crt ]; then
+  ln -sf /etc/pki/tls/certs/ca-bundle.crt \
+         %{buildroot}%{_datadir}/apps/kssl/ca-bundle.crt
+fi
 
 %check
 ERROR=0
@@ -591,8 +591,12 @@ touch --no-create %{_datadir}/icons/crystalsvg 2> /dev/null || :
 
 
 %changelog
-* Fri Oct 14 2011 Than Ngo <than@redhat.com> - 3.5.10-24.1
-- Resolves: bz#746160, CVE-2011-3365, input validation failure in KSSL
+* Fri Aug 24 2012 Than Ngo <than@redhat.com> - 3.5.10-25
+- Resolves: bz#681901, drops old Obsoletes/Provides
+- Resolves; bz#734447, use ca-certificates' ca-bundle.crt
+
+* Fri Oct 14 2011 Than Ngo <than@redhat.com> - 3.5.10-24
+- Resolves: bz#746161, CVE-2011-3365, input validation failure in KSSL
 
 * Mon Jul 19 2010 Than Ngo <than@redhat.com> - 3.5.10-23
 - Resolves: bz#605067, fix checking inotify with new gcc
